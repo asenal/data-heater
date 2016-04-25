@@ -1,0 +1,9 @@
+##1. prepare the data for regression test
+for i in {1..5}; do head -n $(($i*10000)) /data/data12/zhengxin_pro/Heater/DATA/chezhu_info.csv > /tmp/chezhu_info.$(($i*10000)) ;done 
+
+##2. wrap the test code in a cmdline script, which take one input datafile and start a AG connection to run the test;
+##   use XARGS to manage the job queue, at most 10 tests are running at the same time.
+ls /tmp/chezhu_info.30000 |xargs -n 1 -P 10 -i ./data-heater.test.lisp {} {}.log {}.csv
+
+#3. each test will make its own output, after 50 tests are done, we collect information from 50 output logs and format as a table
+#for i in /tmp/chezhu_info.*.log;do egrep '[0-9\., ]+?(Lines|sec|cons)' -o $i | sed 's/[ ,Linesconsec]//g' |tr '\n' '\t' && echo "null"; done |sort -n|less
